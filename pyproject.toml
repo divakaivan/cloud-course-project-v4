@@ -5,11 +5,11 @@
 [project]
 name = "cloud-course-project-v4"
 description = "My package description"
-authors = [{ name = "<your name>", email = "some-email@gmail.com" }]
+authors = [{ name = "Ivan Ivanov", email = "ivan@fake.com" }]
 readme = "README.md"
 requires-python = ">=3.7"
 license = { text = "MIT" }
-dependencies = []
+dependencies = ["boto3"]
 classifiers = ["Programming Language :: Python :: 3"]
 keywords = ["one", "two"]
 
@@ -22,6 +22,8 @@ version = { file = "version.txt" }
 
 # optional dependencies can be installed with square brackets, e.g. `pip install my-package[test,static-code-qa]`
 [project.optional-dependencies]
+stubs = ["boto3-stubs[s3]"]
+notebooks = ["jupyterlab", "ipykernel", "rich"]
 test = ["pytest", "pytest-cov"]
 release = ["build", "twine"]
 static-code-qa = [
@@ -34,12 +36,12 @@ static-code-qa = [
     "Flake8-pyproject",
     "radon",
 ]
-# Installing dev depenendencies in your virtual env makes it so that during development VS Code can 
+# Installing dev depenendencies in your virtual env makes it so that during development VS Code can
 # - surface linting errors
 # - automatically apply formatting
 # - show enhanced autocompletion for stubs libraries
 # See .vscode/settings.json to see how VS Code is configured to use these tools
-dev = ["cloud-course-project-v4[test,release,static-code-qa]"]
+dev = ["cloud-course-project-v4[test,release,static-code-qa,stubs,notebooks]"]
 
 [build-system]
 # Minimum requirements for the build system to execute.
