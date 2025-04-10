@@ -1,4 +1,5 @@
 from datetime import datetime
+from re import L
 from typing import (
     List,
     Optional,
@@ -43,6 +44,11 @@ class FileMetadata(BaseModel):
     size_bytes: int
 
 
+class PutFileResponse(BaseModel):
+    file_path: str
+    message: str
+
+
 # more pydantic models ...
 
 
@@ -52,45 +58,68 @@ class FileMetadata(BaseModel):
 
 
 @APP.put("/files/{file_path:path}")
-async def upload_file(file_path: str, file: UploadFile, response: Response) -> ...:
+async def upload_file(
+    file_path: str, file: UploadFile, response: Response
+) -> PutFileResponse:
     """Upload a file."""
-    ...
+
+    object_already_exists = object_exists_in_s3(
+        bucket_name=S3_BUCKET_NAME,
+        object_key=file_path,
+    )
+    if object_already_exists:
+        response_message = f"Existing file updated at path: /{file_path}"
+        response.status_code = status.HTTP_200_OK
+    else:
+        response_message = f"New file uploaded at path: /{file_path}"
+        response.status_code = status.HTTP_201_CREATED
+
+    file_contents: bytes = await file.read()
+    upload_s3_object(
+        bucket_name=S3_BUCKET_NAME,
+        object_key=file_path,
+        file_content=file_contents,
+        content_type=file.content_type,
+    )
+
+    return PutFileResponse(
+        file_path=file_path,
+        message=response_message,
+    )
 
 
-@APP.get("/files")
-async def list_files(
-    query_params=...,
-) -> ...:
-    """List files with pagination."""
-    ...
+# @APP.get("/files")
+# async def list_files(
+#     query_params=...,
+# ) -> ...:
+#     """List files with pagination."""
 
 
-@APP.head("/files/{file_path:path}")
-async def get_file_metadata(file_path: str, response: Response) -> Response:
-    """Retrieve file metadata.
+# @APP.head("/files/{file_path:path}")
+# async def get_file_metadata(file_path: str, response: Response) -> Response:
+#     """Retrieve file metadata.
 
-    Note: by convention, HEAD requests MUST NOT return a body in the response.
-    """
-    return
-
-
-@APP.get("/files/{file_path:path}")
-async def get_file(
-    file_path: str,
-) -> ...:
-    """Retrieve a file."""
-    ...
+#     Note: by convention, HEAD requests MUST NOT return a body in the response.
+#     """
+#     return
 
 
-@APP.delete("/files/{file_path:path}")
-async def delete_file(
-    file_path: str,
-    response: Response,
-) -> Response:
-    """Delete a file.
+# @APP.get("/files/{file_path:path}")
+# async def get_file(
+#     file_path: str,
+# ) -> ...:
+#     """Retrieve a file."""
 
-    NOTE: DELETE requests MUST NOT return a body in the response."""
-    return
+
+# @APP.delete("/files/{file_path:path}")
+# async def delete_file(
+#     file_path: str,
+#     response: Response,
+# ) -> Response:
+#     """Delete a file.
+
+#     NOTE: DELETE requests MUST NOT return a body in the response."""
+#     return
 
 
 if __name__ == "__main__":
