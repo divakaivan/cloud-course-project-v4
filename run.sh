@@ -21,7 +21,34 @@ function install {
 }
 
 function run {
-    uvicorn files_api.main:APP --reload
+    AWS_PROFILE=cloud-course uvicorn files_api.main:APP --reload
+}
+
+# start the FastAPI app, pointed at a mocked aws endpoint
+function run-mock {
+    set +e
+
+    # Start moto.server in the background on localhost:5000
+    python -m moto.server -p 5000 &
+    MOTO_PID=$!
+
+    # point the AWS CLI and boto3 to the mocked AWS server using mocked credentials
+    export AWS_ENDPOINT_URL="http://127.0.0.1:5000"
+    export AWS_SECRET_ACCESS_KEY="mock"
+    export AWS_ACCESS_KEY_ID="mock"
+    export AWS_REGION="us-east-1"
+
+    # create a bucket called "some-bucket" using the mocked aws server
+    aws s3 mb s3://some-bucket
+
+    # Trap EXIT signal to kill the moto.server process when uvicorn stops
+    trap 'kill $MOTO_PID' EXIT
+
+    # Set AWS endpoint URL and start FastAPI app with uvicorn in the foreground
+    uvicorn src.files_api.main:APP --reload
+
+    # Wait for the moto.server process to finish (this is optional if you want to keep it running)
+    wait $MOTO_PID
 }
 
 # run linting, formatting, and other static code quality tools
