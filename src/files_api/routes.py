@@ -1,6 +1,7 @@
 from fastapi import (
     APIRouter,
     Depends,
+    HTTPException,
     Request,
     Response,
     UploadFile,
@@ -115,6 +116,16 @@ async def get_file(
     file_path: str,
 ) -> StreamingResponse:
     """Retrieve a file."""
+
+    settings: Settings = request.app.state.settings
+    object_exists = object_exists_in_s3(
+        bucket_name=settings.s3_bucket_name, object_key=file_path
+    )
+    if not object_exists:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
+        )
+
     settings: Settings = request.app.state.settings
     get_object_response = fetch_s3_object(settings.s3_bucket_name, object_key=file_path)
     return StreamingResponse(
