@@ -106,7 +106,5 @@ def test__delete_file(client: TestClient):
 
     response = client.delete(f"/files/{TEST_FILE_PATH}")
     assert response.status_code == status.HTTP_204_NO_CONTENT
-
-    # verify - this is an anti-pattern later is fixed
-    with pytest.raises(botocore.exceptions.ClientError):
-        response = client.get(f"/files/{TEST_FILE_PATH}")
+    response = client.get(f"/files/{TEST_FILE_PATH}")
+    assert response.status_code == status.HTTP_404_NOT_FOUND
