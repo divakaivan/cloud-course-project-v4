@@ -11,7 +11,7 @@ TEST_FILE_CONTENT_TYPE = "text/plain"
 def test__upload_file(client: TestClient):
     # create a file
     response = client.put(
-        f"/files/{TEST_FILE_PATH}",
+        f"/v1/files/{TEST_FILE_PATH}",
         files={"file": (TEST_FILE_PATH, TEST_FILE_CONTENT, TEST_FILE_CONTENT_TYPE)},
     )
 
@@ -24,7 +24,7 @@ def test__upload_file(client: TestClient):
     # update an existing file
     updated_content = b"updated content"
     response = client.put(
-        f"/files/{TEST_FILE_PATH}",
+        f"/v1/files/{TEST_FILE_PATH}",
         files={"file": (TEST_FILE_PATH, updated_content, TEST_FILE_CONTENT_TYPE)},
     )
 
@@ -40,12 +40,12 @@ def test__list_files_with_pagination(client: TestClient):
     for i in range(15):
         file_path = f"file_{i}.txt"
         client.put(
-            f"/files/{file_path}",
+            f"/v1/files/{file_path}",
             files={"file": (file_path, TEST_FILE_CONTENT, TEST_FILE_CONTENT_TYPE)},
         )
 
     # List some of the files with pagination
-    response = client.get("/files?page_size=10")
+    response = client.get("/v1/files?page_size=10")
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
     assert len(data["files"]) == 10
@@ -54,11 +54,11 @@ def test__list_files_with_pagination(client: TestClient):
 
 def test__get_file_metadata(client: TestClient):
     client.put(
-        f"/files/{TEST_FILE_PATH}",
+        f"/v1/files/{TEST_FILE_PATH}",
         files={"file": (TEST_FILE_PATH, TEST_FILE_CONTENT, TEST_FILE_CONTENT_TYPE)},
     )
     # Get file metadata
-    response = client.head(f"/files/{TEST_FILE_PATH}")
+    response = client.head(f"/v1/files/{TEST_FILE_PATH}")
     assert response.status_code == 200
     headers = response.headers
     assert headers["Content-Type"] == TEST_FILE_CONTENT_TYPE
@@ -68,22 +68,22 @@ def test__get_file_metadata(client: TestClient):
 
 def test__get_file(client: TestClient):
     client.put(
-        f"/files/{TEST_FILE_PATH}",
+        f"/v1/files/{TEST_FILE_PATH}",
         files={"file": (TEST_FILE_PATH, TEST_FILE_CONTENT, TEST_FILE_CONTENT_TYPE)},
     )
 
-    response = client.get(f"/files/{TEST_FILE_PATH}")
+    response = client.get(f"/v1/files/{TEST_FILE_PATH}")
     assert response.status_code == status.HTTP_200_OK
     assert response.content == TEST_FILE_CONTENT
 
 
 def test__delete_file(client: TestClient):
     client.put(
-        f"/files/{TEST_FILE_PATH}",
+        f"/v1/files/{TEST_FILE_PATH}",
         files={"file": (TEST_FILE_PATH, TEST_FILE_CONTENT, TEST_FILE_CONTENT_TYPE)},
     )
 
-    response = client.delete(f"/files/{TEST_FILE_PATH}")
+    response = client.delete(f"/v1/files/{TEST_FILE_PATH}")
     assert response.status_code == status.HTTP_204_NO_CONTENT
-    response = client.get(f"/files/{TEST_FILE_PATH}")
+    response = client.get(f"/v1/files/{TEST_FILE_PATH}")
     assert response.status_code == status.HTTP_404_NOT_FOUND

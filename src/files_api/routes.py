@@ -28,7 +28,7 @@ from files_api.settings import Settings
 ROUTER = APIRouter()
 
 
-@ROUTER.put("/files/{file_path:path}")
+@ROUTER.put("/v1/files/{file_path:path}")
 async def upload_file(
     request: Request, file_path: str, file: UploadFile, response: Response
 ) -> PutFileResponse:
@@ -57,7 +57,7 @@ async def upload_file(
     return PutFileResponse(file_path=f"{file_path}", message=message)
 
 
-@ROUTER.get("/files")
+@ROUTER.get("/v1/files")
 async def list_files(
     request: Request,
     query_params: GetFilesQueryParams = Depends(),
@@ -91,7 +91,7 @@ async def list_files(
     )
 
 
-@ROUTER.head("/files/{file_path:path}")
+@ROUTER.head("/v1/files/{file_path:path}")
 async def get_file_metadata(
     request: Request, file_path: str, response: Response
 ) -> Response:
@@ -119,7 +119,7 @@ async def get_file_metadata(
     return response
 
 
-@ROUTER.get("/files/{file_path:path}")
+@ROUTER.get("/v1/files/{file_path:path}")
 async def get_file(
     request: Request,
     file_path: str,
@@ -142,7 +142,7 @@ async def get_file(
     )
 
 
-@ROUTER.delete("/files/{file_path:path}")
+@ROUTER.delete("/v1/files/{file_path:path}")
 async def delete_file(
     request: Request,
     file_path: str,
