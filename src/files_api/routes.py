@@ -60,7 +60,7 @@ async def upload_file(
 @ROUTER.get("/files")
 async def list_files(
     request: Request,
-    query_params: GetFilesQueryParams = Depends(),  # noqa: B008
+    query_params: GetFilesQueryParams = Depends(),
 ) -> GetFilesResponse:
     """List files with pagination."""
     settings: Settings = request.app.state.settings
@@ -125,8 +125,8 @@ async def get_file(
     file_path: str,
 ) -> StreamingResponse:
     """Retrieve a file."""
-
     settings: Settings = request.app.state.settings
+
     object_exists = object_exists_in_s3(
         bucket_name=settings.s3_bucket_name, object_key=file_path
     )
@@ -135,7 +135,6 @@ async def get_file(
             status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
         )
 
-    settings: Settings = request.app.state.settings
     get_object_response = fetch_s3_object(settings.s3_bucket_name, object_key=file_path)
     return StreamingResponse(
         content=get_object_response["Body"],
@@ -153,14 +152,12 @@ async def delete_file(
 
     NOTE: DELETE requests MUST NOT return a body in the response."""
     settings: Settings = request.app.state.settings
-
-    object_exists = object_exists_in_s3(
-        bucket_name=settings.s3_bucket_name, object_key=file_path
-    )
-    if not object_exists:
+    if not object_exists_in_s3(settings.s3_bucket_name, object_key=file_path):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
         )
+
     delete_s3_object(settings.s3_bucket_name, object_key=file_path)
+
     response.status_code = status.HTTP_204_NO_CONTENT
     return response

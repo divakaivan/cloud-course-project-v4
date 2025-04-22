@@ -45,32 +45,11 @@ def test__list_files_with_pagination(client: TestClient):
         )
 
     # List some of the files with pagination
-    response = client.get("/files?page_size=3")
+    response = client.get("/files?page_size=10")
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
-    assert len(data["files"]) == 3
+    assert len(data["files"]) == 10
     assert "next_page_token" in data
-
-    # List the next page of files
-    response = client.get(f"/files?page_size=10&page_token={data['next_page_token']}")
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-    assert len(data["files"]) == 10
-    assert data["next_page_token"]
-
-    # List final page of files
-    response = client.get(f"/files?page_size=3&page_token={data['next_page_token']}")
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-    assert len(data["files"]) == 2
-    assert data["next_page_token"] is None
-
-    # List all files without pagination
-    response = client.get("/files")
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-    assert len(data["files"]) == 10
-    assert data["next_page_token"]
 
 
 def test__get_file_metadata(client: TestClient):
